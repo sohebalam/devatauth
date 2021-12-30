@@ -2,7 +2,7 @@ import { fetcher } from "../fetch"
 import useSWR from "swr"
 
 export function useCurrentUser() {
-  return useSWR("/api/user", fetcher)
+  return useSWR("/api/profile", fetcher)
 }
 
 export function useUser(id) {

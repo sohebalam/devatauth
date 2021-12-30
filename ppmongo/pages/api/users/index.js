@@ -4,7 +4,7 @@ import {
   findUserByUsername,
   insertUser,
 } from "../../../lib/db"
-import { auths, database, validateBody } from "../../../lib/middlewares"
+import { auths, database, validateBody } from "../../../middlewares"
 import { ncOpts } from "../../../lib/nc"
 import { slugUsername } from "../../../lib/user"
 import nc from "next-connect"
@@ -55,7 +55,6 @@ handler.post(
     const user = await insertUser(req.db, {
       email,
       originalPassword: password,
-      bio: "",
       name,
       username,
     })
