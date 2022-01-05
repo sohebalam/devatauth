@@ -3,32 +3,54 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
 export const social = async (req, res) => {
-  const { email, firstName, lastName } = req.body
+  const { googleId, email, givenName, familyName } = req.body.result
 
-  console.log(email, firstName, lastName)
+  // console.log(email, firstName, lastName)
 
   try {
     const oldUser = await User.findOne({ email })
 
-    if (oldUser) return res.status(400).json({ message: "User already exists" })
-
-    const hashedPassword = await bcrypt.hash(password, 12)
-
+    if (oldUser) {
+      const token = jwt.sign(
+        { email: oldUser.email, id: oldUser._id, name: oldUser.name },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1h",
+        }
+      )
+      return res.status(200).json({
+        token,
+        user: {
+          email: email,
+          id: oldUser.socialId,
+          name: oldUser.name,
+        },
+      })
+    }
     const result = await User.create({
+      socialId: googleId,
       email,
-      password: hashedPassword,
-      name: `${firstName} ${lastName}`,
+      name: `${givenName} ${familyName}`,
+      password: "",
     })
 
     const token = jwt.sign(
-      { email: result.email, id: result._id },
+      { email: result.email, id: result._id, name: result.name },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
       }
     )
 
-    res.status(201).json({ token })
+    // res.status(201).json({ token })
+    res.status(200).json({
+      token,
+      user: {
+        email: email,
+        id: result.socialId,
+        name: result.name,
+      },
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
 
@@ -55,7 +77,7 @@ export const signin = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" })
 
     const token = jwt.sign(
-      { email: oldUser.email, id: oldUser._id },
+      { email: oldUser.email, id: oldUser._id, name: oldUser.name },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
@@ -65,12 +87,14 @@ export const signin = async (req, res) => {
 
     // const { email, id } = user
 
-    res
-      .status(200)
-      .json({
-        token,
-        user: { email: oldUser.email, id: JSON.stringify(oldUser._id) },
-      })
+    res.status(200).json({
+      token,
+      user: {
+        email: oldUser.email,
+        id: JSON.stringify(oldUser._id),
+        name: oldUser.name,
+      },
+    })
   } catch (err) {
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -95,14 +119,19 @@ export const signup = async (req, res) => {
     })
 
     const token = jwt.sign(
-      { email: result.email, id: result._id },
+      { email: result.email, id: result._id, name: result.name },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
       }
     )
 
-    res.status(201).json({ result, token })
+    res
+      .status(201)
+      .json({
+        user: { email: result.email, id: result._id, name: result.name },
+        token,
+      })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
 

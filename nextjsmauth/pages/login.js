@@ -64,6 +64,7 @@ const SignUp = () => {
     try {
       dispatch(social(formData))
 
+      window.location.reload()
       router.push("/")
     } catch (error) {
       console.log(error)

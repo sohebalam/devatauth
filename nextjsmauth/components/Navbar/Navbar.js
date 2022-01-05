@@ -8,18 +8,14 @@ import decode from "jwt-decode"
 // import memories from "../../images/memories.png"
 import * as actionType from "../../redux/constants/actionTypes"
 import useStyles from "./styles"
-import { parseCookies } from "nookies"
+import { parseCookies, destroyCookie } from "nookies"
 
 const Navbar = () => {
   const cookieuser = parseCookies()
+  // const [toggle, setToggle] = useState(false)
+  const user = cookieuser.user ? JSON.parse(cookieuser.user) : ""
 
-  // const [user, setUser] = useState(JSON.parse(cookieuser.user))
-  console.log(JSON.parse(cookieuser.user))
-
-  // const user = cookieuser.user ? JSON.parse(cookieuser.user) : ""
-  // console.log(user)
-
-  const user = {}
+  // if (user) () => router.reload()
 
   const dispatch = useDispatch()
   // const location = useLocation()
@@ -31,29 +27,16 @@ const Navbar = () => {
     dispatch({ type: actionType.LOGOUT })
 
     destroyCookie(null, "token")
+    destroyCookie(null, "user")
 
     router.push("/login")
 
-    setUser(null)
+    // setUser(null)
   }
 
   useEffect(() => {
-    // const cookies = parseCookies("token")
-    // console.log("nav", cookies)
-
-    // const cookies = cookieCutter.get("token")
-    // console.log(cookies)
-
-    const token = user?.token
-
-    if (token) {
-      const decodedToken = decode(token)
-
-      if (decodedToken.exp * 1000 < new Date().getTime()) logout()
-    }
-
-    // setUser(JSON.parse(localStorage.getItem("profile")))
-  }, [router])
+    // ;() => setToggle(!toggle)
+  }, [cookieuser, user])
 
   return (
     <AppBar className={classes.appBar} position="static" color="inherit">
@@ -70,17 +53,17 @@ const Navbar = () => {
         {/* <img className={classes.image} src={memories} alt="icon" height="60" /> */}
       </div>
       <Toolbar className={classes.toolbar}>
-        {user?.result ? (
+        {user ? (
           <div className={classes.profile}>
             <Avatar
               className={classes.purple}
-              alt={user?.result.name}
-              src={user?.result.imageUrl}
+              alt={user?.email}
+              src={user?.imageUrl}
             >
-              {user?.result.name.charAt(0)}
+              {/* {user?.name.charAt(0)} */}
             </Avatar>
             <Typography className={classes.userName} variant="h6">
-              {user?.result.name}
+              {user?.name || user?.email}
             </Typography>
             <Button
               variant="contained"
